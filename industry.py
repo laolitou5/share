@@ -62,13 +62,12 @@ class Dog(object):
 
 if __name__ == '__main__':
     D = Dog('20201219', '20210120')
-    # data = D.data()
-    # data = D.industry_statistics(data)
     k = '603058.sh'
     d1 = pro.daily(ts_code=k, start_date="20201219", end_date="20210120")
     kk = '601155.sh'
     d2 = pro.daily(ts_code=kk, start_date="20201001", end_date="20201109")
-    print(d1.shape, d2.shape)
+
+
     p = D.KL_divergence(d1.close.tolist(), d2.close.tolist())
     pp = D.JS_divergence(d1.close.tolist(), d2.close.tolist())
     pppp = D.ipearsonr(d1.close.tolist(), d2.close.tolist())
