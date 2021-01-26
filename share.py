@@ -47,7 +47,8 @@ def indu_code():
 	result = pd.DataFrame(industry_list, columns=rs.fields)
 	#print(result[result.code_name == '通信'])
 	#print(result.columns)
-	#print(set(result['industry'].tolist()))
+	print(set(result['industry'].tolist()))
+
 	codes = result[result.industry=='电气设备'].code.tolist()
 
     #
@@ -55,16 +56,7 @@ def indu_code():
 	codes_ = []
 	for ele in codes:
 		codes_.append(re.findall('\d+', ele)[0])
-	
-		
-	#import tushare as ts
-	#df = ts.get_industry_classified()
-	#print(df[df.code == '300760'])
-	#df_industry_list = list(set(df.c_name.tolist()))
-	#print(df_industry_list)
-	#codes_ = df[df.c_name == '生物制药'].code.tolist()
-	#print(df[df.c_name == '水泥行业'])
-	
+
 	return codes_
 	
 
@@ -161,21 +153,6 @@ def youji_share_industry(dff):
     df.to_csv('shuiqi.csv', encoding='gb18030', index=False)
 
 
-
-
-
-
-
-
-
-
-            # ddd.append(dt[dt.code == ele_code])
-            # ttt.append(td[td.code == ele_code])
-    # ff = pd.concat(ddd)
-    # ff.to_csv('shuiqi.csv', encoding='gb18030', index=False)
-    # fff = pd.concat(ttt)
-    # fff.to_csv('shuiqi1.csv', encoding='gb18030', index=False)
-
     return 0
 
 def cashflow_(code):
@@ -207,14 +184,7 @@ def code_(code):
     print(dff)
 
     dff.to_csv('%s.csv'%code, encoding='gb18030', index=False)
-    # dff = df[df.code.isin(list_code)]
-    # print(dff[dff.code == code].per)
-    # dff.to_csv('123.csv', encoding='gbk'
-    # )
-    # print(sorted(dff.per.tolist(), reverse=True))
-    # num = sorted(dff.per.tolist(), reverse=True).index(pe)
-    # txt = code_ + '\t' + str(pe) + '\t' + '%s,%s/%s'%(pe, num, dff.shape[0])
-    # print(txt)
+
 
     return 0
 
@@ -244,12 +214,7 @@ def index_(code):
 
     name.append('code')
     data.append(code)
-    # name.append('concept')
-    # data.append(concept)
 
-    # df_concept = ts.get_concept_classified()
-    # concept = df_concept[df_concept.code == code].c_name
-    # print(concept)
 
     df = pd.read_csv('0910.csv', encoding='gb18030', index_col=False)
 
@@ -359,16 +324,21 @@ def index_(code):
 def getcandlecharts(codes):
     # chinese = mpl.font_manager.FontProperties(fname='C:\Windows\Fonts\simhei.ttf')
     index = 1
-    shutil.rmtree('test')
-    os.mkdir('test')
-    print(codes)
-    #codes = ts.get_stock_basics().index.values.tolist()
-    #codes = ['600436','000725','300253','300058','002395', '002481','603688','000810', '002230', '300136','002714','600903','300173','300073','600104','300454','300578','601318','300676','000002','300312','600519','002177','600031','601888','002142','300357','000063','300015','002415','002157','600507','600703','000789','002036','000876','600012','300322','603978','300465','300465','002434','603078','000601','000997','002050','601066','300429','300433','002302','600761','300304','601799','601799','002236','688268','002971','600127','300130','300052','300417','000915','600459','002409', '300457','300346','002792','002385','300256','600143','002007','002127','300416','300750','300347','002414','300695','300482','002456','002371','300468','600305','300236','002458','600171','000158','300223','601555','300805','600988','600547','600350','000610','600276','300115','002475','519674','300653','300572','600406','300385','002030','600063','300580','603786','002838','603559','300820','300001','300033','601236','601236','600909','603093','603982','300643','002023','603160','300348','603986','002299','300661','002124','002384','000955','603601','600418','601696','300817','000700','600498','002422','300026','600789','002975','002180','600161','300762','601990','002223','300607','002233','300793','601816','600585','300573','300122','603520','300224','600325','300803','300511','002847','002791','300702','600521','002706','002929','300048','603890','002846','300760','300748','603018','002470','600251','600313','300738','600410','002271','600298','300250','603669','002567','603367','603881','300529','600211','300246','600114','600598','601952','002959','603309','603916','000710','600380','603109','002185','002311','600720','603590','600196','002332','600741','603068','002317','300753','300759','600369','002597','002001','002468','601139']	
+    absolute_path = os.getcwd()
+    print(os.path.exists(os.path.join(absolute_path, 'test')))
+    if os.path.exists(os.path.join(absolute_path, 'test')):
+        shutil.rmtree('test')
+        os.mkdir('test')
+    else:
+        os.mkdir('test')
+    print(codes, len(codes))
+
     try:
         for code in codes:
             #print(code)
             #plt.figure(figsize=(10, 8), facecolor='w')
             shyh = ts.get_k_data(code, start='2019-01-01', ktype='W')
+            # print(shyh)
 			
             if len(shyh) >0 :
                 #print(shyh.shape)
@@ -388,13 +358,6 @@ def getcandlecharts(codes):
                 plt.close()
     except TypeError:
         print (code)
-  # index = index + 1
-        # if index == 16:
-        #     break
-    # plt.suptitle('%s'%code)
-    # plt.tight_layout(1.5)
-    # plt.subplots_adjust(top=0.92)
-    # plt.show()
 
 def share_fre():
     path = r'C:\Users\lizhaoxing\Desktop\SentimentAnalysis\lstm\share.csv'
