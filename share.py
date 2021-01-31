@@ -10,6 +10,9 @@ import shutil
 # import datetime
 from datetime import datetime
 import matplotlib.dates as dt
+
+key = '75f7cbe506f185ba42bf382701b21f5e599482881eda3dd639fd8eb2'
+pro = ts.pro_api(key)
 # df_area = ts.get_area_classified()
 # print(df_area[df_area.area == '深圳'])
 # print(df_area[df_area.name == '深圳燃气'])
@@ -331,23 +334,24 @@ def getcandlecharts(codes):
         os.mkdir('test')
     else:
         os.mkdir('test')
-    print(codes, len(codes))
 
     try:
         for code in codes:
-            #print(code)
+            print(code)
             #plt.figure(figsize=(10, 8), facecolor='w')
-            shyh = ts.get_k_data(code, start='2019-01-01', ktype='W')
-            # print(shyh)
-			
+            # shyh = ts.get_k_data(code, start='2019-01-01', ktype='W')
+            shyh = pro.weekly(ts_code=code, start_date='20200101', end_date='20220130',
+                            fields='ts_code,trade_date,open,high,low,close,vol,amount')
+            shyh.rename(columns={'ts_code':'code', 'trade_date':'date'}, inplace=True)
+
+
             if len(shyh) >0 :
-                #print(shyh.shape)
                 plt.figure(figsize=(10, 8), facecolor='w')
-                mat_shyh = shyh.values
-                num_time = dt.date2num([datetime.strptime(ele, '%Y-%m-%d') for ele in mat_shyh[:, 0]])
-                mat_shyh[:, 0] = num_time
+                num_time = dt.date2num([datetime.strptime(ele, '%Y%m%d') for ele in shyh.date.tolist()])
+                shyh['date'] = num_time
                 ax = plt.subplot(1, 1, index)
-                mpf.candlestick_ochl(ax, mat_shyh,width=0.6, colorup="r", colordown="g", alpha=1.0)
+                mpf.candlestick_ochl(ax, zip(shyh.date, shyh.open, shyh.close, shyh.high, shyh.low), width=0.6,
+                                     colorup="r", colordown="g", alpha=1.0)
                 plt.grid(True)
                 plt.xticks(rotation=30)
                 plt.title('%s'%code)
