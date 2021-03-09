@@ -35,12 +35,12 @@ class Stock:
 
     def fitPrice(self):
         res = self.__getPrice()
-        col = ['name', 'open_today', 'close_yesterday', 'price_ontime', 'price_highest', 'price_lower', 'jbuy1','jsell1', 'count', 'money', 'count_buy1', 'price_buy1', 'count_buy2', 'price_buy2','count_buy3', 'price_buy3','count_buy4', 'price_buy4','count_buy5', 'price_buy5', 'count_sell1', 'price_sell1','count_sell2', 'price_sell2', 'count_sell3', 'price_sell3','count_sell4', 'price_sell4', 'count_sell5', 'price_sell5', 'date', 'time', 'null']
-        df = pd.DataFrame(res, columns=col)
-        df1 = pd.DataFrame(df.values.T, index=df.columns, columns=df.index)
-        print(df1)
+        rr = [ele[:32] for ele in res]
+        col = ['name', 'open_today', 'close_yesterday', 'price_ontime', 'price_highest', 'price_lower', 'jbuy1','jsell1', 'count', 'money', 'count_buy1', 'price_buy1', 'count_buy2', 'price_buy2','count_buy3', 'price_buy3','count_buy4', 'price_buy4','count_buy5', 'price_buy5', 'count_sell1', 'price_sell1','count_sell2', 'price_sell2', 'count_sell3', 'price_sell3','count_sell4', 'price_sell4', 'count_sell5', 'price_sell5', 'date', 'time']
+        df = pd.DataFrame(rr, columns=col)
+        # df1 = pd.DataFrame(df.values.T, index=df.columns, columns=df.index)
 
-        return df1
+        return df
         #exit(-1)
         #if(name!=self.name):
         #    msg = '股票名字不符，code: %s, local_name: %s, name: %s 。' % (self.code, self.name, name)
@@ -73,9 +73,9 @@ def plot():
         plt.pause(0.3)
 			   
 if __name__ == '__main__':
-	s = Stock(['sz002074', 'sz002245'])
+	s = Stock(['sh688002', 'sh688006', 'sh688008', 'sz300607'])
 	print(s.fitPrice())
-    plot()
+    # plot()
 
 
 

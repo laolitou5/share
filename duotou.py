@@ -28,25 +28,13 @@ def indu_code():
 		# 获取一条记录，将记录合并在一起
 		industry_list.append(rs.get_row_data())
 	result = pd.DataFrame(industry_list, columns=rs.fields)
-	#print(result)
-	#print(result[result.code_name == '三维通信'])
-	#print(result.columns)
+
 	print(set(result['industry'].tolist()))
 	codes = result[result.industry=='汽车'].code.tolist()
 	print(len(codes))
 	codes_ = []
 	for ele in codes:
 		codes_.append(re.findall('\d+', ele)[0])
-	#print(codes_)
-		
-	#df = ts.get_industry_classified()
-	#print(df)
-	#print(df[df.code == '300760'])
-	#df_industry_list = list(set(df.c_name.tolist()))
-	#print(df_industry_list)
-	#exit(-1)
-	#codes_ = df[df.c_name == '生物制药'].code.tolist()
-	#print(df[df.c_name == '水泥行业'])
 	
 	return codes_
 	
@@ -54,7 +42,6 @@ def dt(code_list):
 	s = 0
 	l = []
 	for ele in code_list:
-		#print(ele)
 		s += 1
 		print(s)
 		try:

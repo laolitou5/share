@@ -78,9 +78,71 @@ def plot(code_list):
 		except Exception as e:
 			print(e)
 		
+# if __name__ == '__main__':
+# 	codes = indu_code()
+# 	#print(codes)
+# 	plot(codes)
+import requests
+import time
+import pandas as pd
+
 if __name__ == '__main__':
-	codes = indu_code()
-	#print(codes)
-	plot(codes)
-#print diff1
-#print diff2
+	for j in range(1, 49):
+		url = f'http://fund.eastmoney.com/Data/Fund_JJJZ_Data.aspx?t=1&lx=1&letter=&gsid=&text=&sort=zdf,desc&page={j},200&dt=1597126258333&atfc=&onlySale=0'
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.71 Safari/537.1 LBBROWSER'
+		}
+		resp = requests.get(url, headers=headers).text
+		str_ = resp[102:]
+		list1 = eval(str_.split(",count")[0])
+		print(f'正在爬取第{j}页')
+		print(f'本页爬取{len(list1)}条数据')
+
+		num = []
+		name = []
+		today_price = []
+		yesterday_price = []
+		day_value = []
+		day_value_rate = []
+		subscription_status = []
+		redemption_status = []
+		service_charge = []
+
+		for i in range(len(list1)):
+			# 1、基金代码号
+			num.append(list1[i][0])
+			# 2、股票名称
+			name.append(list1[i][1])
+			# 3、今日基金净额
+			today_price.append(list1[i][3])
+			# 4、昨日基金净额
+			yesterday_price.append(list1[i][5])
+			# 5、日增长值
+			day_value.append(list1[i][7])
+			# 6、日增长率
+			day_value_rate.append(list1[i][8])
+			# 7、申购状态
+			subscription_status.append(list1[i][9])
+			# 8、赎回状态
+			redemption_status.append(list1[i][10])
+			# 9、手续费
+			service_charge.append(list1[i][17])
+
+		df = pd.DataFrame()
+		df['基金代码'] = num
+		df['基金名称'] = name
+		df['2020-08-12\n单位净值'] = today_price
+		df['2020-08-11\n单位净值'] = yesterday_price
+		df['日增长值'] = day_value
+		df['日增长率\n%'] = day_value_rate
+		df['申购状态'] = subscription_status
+		df['赎回状态'] = redemption_status
+		df['手续费'] = service_charge
+
+		try:
+			df.to_excel(f'基金{j}.xlsx', '基金信息', index=None, encoding='utf-8')
+
+		except Exception as e:
+			print(e)
+
+	time.sleep(1)

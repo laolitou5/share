@@ -328,7 +328,6 @@ def getcandlecharts(codes):
     # chinese = mpl.font_manager.FontProperties(fname='C:\Windows\Fonts\simhei.ttf')
     index = 1
     absolute_path = os.getcwd()
-    print(os.path.exists(os.path.join(absolute_path, 'test')))
     if os.path.exists(os.path.join(absolute_path, 'test')):
         shutil.rmtree('test')
         os.mkdir('test')
