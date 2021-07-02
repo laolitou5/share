@@ -1,4 +1,4 @@
-
+ 
 import pandas as pd
 import re
 from real_time_stock import Stock
@@ -10,7 +10,7 @@ def kkk(x):
 
     real_ = Stock([x])
     df_real = real_.fitPrice()[["name", "open_today", "close_yesterday", "price_ontime", "count_buy1", \
-                                "count_buy2", "count_buy3", "count_sell1", "count_sell2", "count_sell3"]]
+                                "count_buy2", "count_buy3", "count_sell1", "count_sell2", "count_sell3", 'jbuy1','jsell1']]
     df_real["count_buy"] = df_real["count_buy1"].astype(int) + df_real["count_buy2"].astype(int) + df_real[
         "count_buy3"].astype(int)
     df_real["count_sell"] = df_real["count_sell1"].astype(int) + df_real["count_sell2"].astype(int) + df_real[
@@ -45,6 +45,7 @@ def cur_data(kk):
 if __name__ == '__main__':
 
     df = pd.read_csv('../data/bs_hist_merge_new.csv', converters={'code': str})
+    df = df[df.shareholding_percent>1]
     k = list(set(df.symbol.tolist()))
     kk = [re.search('[a-zA-Z]+', s).group().lower() + re.search('\d+', s).group() for s in k]
 
@@ -74,9 +75,11 @@ if __name__ == '__main__':
 
             df = df[["name", "open_today", "price_ontime2","r_ontime", "rr_day", 'committee1', 'committee2']]
             df.sort_values(by=['r_ontime', 'rr_day'], inplace=True, ascending=False)
-            print('实时变化率：', df.head(30))
+            print('实时变化率：')
+            print(df.head(30))
             df.sort_values(by=['rr_day','r_ontime'], inplace=True, ascending=False)
-            print('price变化：', df.head(30))
+            print('price变化：')
+            print(df.head(30))
             df['committee_diff'] = df[['committee1', 'committee2']].apply(lambda x: x['committee2'] - x['committee1'], axis=1)
             df.sort_values(by=['committee_diff', 'committee2', 'committee1'],inplace=True, ascending=False)
             # print('委比：', df.head(30))

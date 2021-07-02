@@ -1,4 +1,5 @@
 #
+
 key = '75f7cbe506f185ba42bf382701b21f5e599482881eda3dd639fd8eb2'
 
 import tushare as ts
@@ -21,6 +22,8 @@ from datetime import datetime, timedelta
 from opendatatools import swindex
 import re
 import time
+from multiprocessing import Pool
+from duotou import dt as dtt
     
 
 class Dog(object):
@@ -182,9 +185,11 @@ class Dog(object):
         df = self.shenwan_industry()
         index_code = df[df.index_name == indu].index_code.tolist()[0]
         df1, msg1 = swindex.get_index_cons(index_code)
+        df1.rename(columns = {'stock_code':'symbol'}, inplace=True)
 
-        d1 = pd.merge(df1, df_s, left_on='stock_code', right_on='code')
-        return d1.symbol.tolist()
+        # d1 = pd.merge(df1, df_s, left_on='stock_code', right_on='symbol')
+        d2 = pd.merge(df_s[['ts_code', 'symbol']], df1,  on='symbol')
+        return d2.ts_code.tolist()
 
 
 
@@ -318,6 +323,7 @@ class Dog(object):
             try:
                 print(code)
                 shyh = self.code_data(code, ktype)
+
                 shyh.rename(columns={'ts_code': 'code', 'trade_date': 'date'}, inplace=True)
                 shyh = shyh[shyh.date>=self.tm]
                 if len(shyh) > 0:
@@ -325,7 +331,7 @@ class Dog(object):
                     num_time = dt.date2num([datetime.strptime(ele, '%Y%m%d') for ele in shyh.date.tolist()])
                     shyh['date'] = num_time
                     ax = plt.subplot(1, 1, index)
-                    mpf.candlestick_ochl(ax, zip(shyh.date, shyh.open, shyh.close, shyh.high, shyh.low), width=0.6,
+                    mpf.candlestick_ochl(ax, zip(shyh.date, shyh.open, shyh.close, shyh.high, shyh.low), width=2,
                                          colorup="r", colordown="g", alpha=1.0)
                     plt.grid(True)
                     plt.xticks(rotation=30)
@@ -400,12 +406,12 @@ class Dog(object):
         """boll线"""
 
         absolute_path = os.getcwd()
-        print('是否存在boll_plot文件:', os.path.exists(os.path.join(absolute_path, 'boll_plot')))
-        if os.path.exists(os.path.join(absolute_path, 'boll_plot')):
-            shutil.rmtree('boll_plot')
-            os.mkdir('boll_plot')
+        print('是否存在boll_plot文件:', os.path.exists(os.path.join(absolute_path, '../boll_plot')))
+        if os.path.exists(os.path.join(absolute_path, '../boll_plot')):
+            shutil.rmtree('../boll_plot')
+            os.mkdir('../boll_plot')
         else:
-            os.mkdir('boll_plot')
+            os.mkdir('../boll_plot')
 
 
         for ele in code:
@@ -432,7 +438,7 @@ class Dog(object):
                 plt.title('%s' % ele)
                 plt.xlabel("Date")
                 plt.ylabel("boll")
-                plt.savefig('boll_plot/%s.png' % ele)
+                plt.savefig('../boll_plot/%s.png' % ele)
                 plt.close()
             except Exception as e:
                 print('error:', ele)
@@ -472,38 +478,48 @@ def main(start_time, end_time, tm, indu, ktype):
     # exit(-1)
     # # D.bx_add_closePrice()
     # exit(-1)
-    df = D.shenwan_industry()
-    #申万一级各个行业北向资金流动图
-    # D.bx_in_out('20210315', '20210323')
+    # df = D.shenwan_industry()
+    # # 申万一级各个行业北向资金流动图
+    # D.bx_in_out('20210601', '20210627')
     # exit(-1)
     # D.bx_in_out_indu('20210201', '20210218')
     # exit(-1)
     #根据最新的行业北向资金变化获得codes
-    df_s = pd.read_csv('../data/2021-03-23_new.csv', converters={'code': str})
+    #北向股票池
+    # df_s = pd.read_csv('../data/2021-06-03_new.csv', converters={'code': str})
+    #所有股票
+    df_s = pd.read_csv('../data/all_stocks.csv',converters={'code': str})
+    # print(set(df_s.industry.tolist()))
+    # exit(-1)
+    # df_s['lb'] = df_s.apply(lambda x:1 if '*ST' in x['name'] or '退' in x['name'] else 0, axis=1)
+    # df_s = df_s[df_s.lb == 0]
+    df_s['symbol'] = df_s.apply(lambda x: re.sub(r'.SH|.SZ', '', x['ts_code']), axis=1)
     k = D.shenwan_industry_code(df_s, indu)
 
-    for ele in k:
-        print(ele)
-        df = D.data_sar(ele, ktype)
-        print(df)
-        exit(-1)
+    #个性化
 
+    # df_s = pd.read_csv('../data/all_stocks.csv', converters={'code': str})
+    # df_s['lb'] = df_s.apply(lambda x:1 if '688' in str(x['symbol']) and x['symbol'] > 666666 else 0, axis=1)
+    # k = df_s[df_s.lb == 1].ts_code.tolist()
+
+    k = dtt(k, end_time, ktype)
+    print(k)
+    
+    
+    
+
+    #sar
+    # for ele in k:
+    #     print(ele)
+    #     df = D.data_sar(ele, ktype)
+    #     print(df)
+    #
     # exit(-1)
 
 
-    data = pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
-    industrys = list(set(data['industry'].tolist()))
+    # data = pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
+    # industrys = list(set(data['industry'].tolist()))
     # code = data[data.industry == indu].ts_code.tolist()
-
-    code = ['600305.SH', '601615.SH', '300122.SZ', '603866.SH', '300207.SZ', '603786.SH', '603658.SH', '601877.SH',
-            '601799.SH', '601598.SH', '600885.SH', '600754.SH', '300724.SZ', '300496.SZ', '300463.SZ', '300327.SZ',
-            '300253.SZ', '002557.SZ', '000860.SZ', '000921.SZ', '000400.SZ', '002970.SZ', '002960.SZ', '002920.SZ',
-            '002918.SZ', '002891.SZ', '002851.SZ', '002833.SZ', '002831.SZ', '002812.SZ', '002798.SZ', '002791.SZ',
-            '002747.SZ', '002727.SZ', '002706.SZ', '002690.SZ', '002625.SZ', '002614.SZ', '002607.SZ', '002539.SZ',
-            '002475.SZ', '002463.SZ', '002444.SZ', '002439.SZ', '002430.SZ', '002414.SZ', '002371.SZ', '002352.SZ',
-            '002335.SZ', '002241.SZ', '002182.SZ', '002142.SZ', '002129.SZ', '002127.SZ', '002120.SZ', '002110.SZ',
-            '002080.SZ', '002050.SZ', '002027.SZ', '000999.SZ', '000923.SZ', '000778.SZ', '000717.SZ', '000710.SZ',
-            '000547.SZ', '000426.SZ', '000028.SZ']
 
     # plot 蜡烛图
     D.getcandlecharts(k, ktype)
@@ -518,23 +534,6 @@ def main(start_time, end_time, tm, indu, ktype):
     # D.bbands(code, ktype)
 
 
-#['600305.SH','601615.SH', '300122.SH', '603866.SH', '300207.SH', '603786.SH','603658.SH','601877.SH','601799.SH','601598.SH', '600885.SH','600754.SH',
-# '300724.SZ','300496.SZ', '300463.SZ', '300327.SZ', '300253.SZ', '002557.SZ', '000860.SZ', '000921.SZ', '000400.SZ', '002970.SZ', '002960.SZ', '002920.SZ',
-# '002918.SZ', '002891.SZ','002851.SZ','002833.SZ','002831.SZ', '002812.SZ','002798.SZ', '002791.SZ', '002747.SZ', '002727.SZ','002706.SZ', '002690.SZ',
-# '002625.SZ','002614.SZ','002607.SZ','002539.SZ', '002475.SZ', '002463.SZ', '002444.SZ', '002439.SZ', '002430.SZ', '002414.SZ','002371.SZ', '002352.SZ',
-# '002335.SZ','002241.SZ', '002182.SZ', '002142.SZ','002129.SZ','002127.SZ','002120.SZ', '002110.SZ', '002080.SZ', '002050.SZ', '002027.SZ','000999.SZ',
-# '000923.SZ', '000778.SZ', '000717.SZ', '000710.SZ', '000547.SZ', '000426.SZ', '000028']
-
-
- # ['玻璃', '多元金融', '林业', '特种钢', '中成药', '造纸', '橡胶', '超市连锁', '船舶', '批发业', '石油开采', '轻工机械', '水运', '农用机械', '水泥', '运输设备',
-# '路桥', '电气设备', '石油贸易', '专用机械', '红黄酒', '小金属', '建筑工程', '化学制药', '互联网', '饲料', '家用电器', '出版业', '港口', '公路', '电器连锁', None,
-# '汽车配件', '保险', '机场', '医疗保健', '纺织机械', '环境保护', '航空', '焦炭加工', '房产服务', '广告包装', '化工原料', '园区开发', '文教休闲', '石油加工', '全国地产',
-# '铜', '通信设备', '软件服务', '仓储物流', '生物制药', '农药化肥', '影视音像', '摩托车', '证券', '矿物制品', '供气供热', '水力发电', 'IT设备', '纺织', '汽车整车',
-# '化工机械', '铅锌', '啤酒', '火力发电', '酒店餐饮', '机床制造', '综合类', '汽车服务', '食品', '医药商业', '新型电力', '日用化工', '服饰', '钢加工', '乳制品',
-# '其他建材', '半导体', '软饮料', '商品城', '银行', '普钢', '水务', '家居用品', '电信运营', '种植业', '旅游景点', '其他商业', '空运', '塑料', '农业综合', '元器件',
-# '染料涂料', '煤炭开采', '百货', '化纤', '装修装饰', '黄金', '旅游服务', '铝', '铁路', '白酒', '渔业', '区域地产', '电器仪表', '陶瓷', '机械基件', '公共交通',
-# '工程机械', '商贸代理']
-
 #一飞冲天：
 #w底：
 #主升浪：600674.SH
@@ -547,6 +546,10 @@ if __name__ == '__main__':
     #为每日添加收盘价
     # main('20210219', '20210219', '20200901', '新型电力', 'D')
 
+    # data = pro.query('stock_basic', exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
+    # data.to_csv('../data/all_stocks.csv', index=False)
+    # exit(-1)
+
 
     # k = '000404.sz'
     # # df = D.max_min(k)
@@ -554,7 +557,8 @@ if __name__ == '__main__':
     # print(df)
     # exit(-1)D
     # d1 = pro.daily(ts_code=k, start_date="20200601", end_date="20210130")
-    main('19900101', '20210329', '20201201', '非银金融', 'D')
+    # main('19900101', '20210416', '20201201', '医药生物', 'D')
+    main('19900101', '20210628', '20200906', '计算机', 'W')
     # main()
     # import numpy as np
 
